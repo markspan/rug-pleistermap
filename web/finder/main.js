@@ -2,13 +2,14 @@
  * Bandaid Finder: shows dispensers and lists the nearest non-empty ones,
  * based on GPS position plus the floor the user says they are on.
  */
-import { fromLonLat } from 'ol/proj.js';
+import { fromLonLat, toLonLat } from 'ol/proj.js';
 import { CONFIG } from '../shared/config.js';
 import { createMapCore } from '../shared/mapCore.js';
 import { fetchPublic } from '../shared/dataset.js';
 import { fillStatus } from '../shared/dispenserLayer.js';
 import { rankDispensers, describeRoute } from './nearest.js';
 import { PositionTracker, createPositionLayer, LocateControl, centreOn } from '../shared/locate.js';
+import { SearchPoint } from './searchPoint.js';
 
 const RESULT_COUNT = 3;
 const USER_FLOOR_KEY = 'bandaid-finder.userFloor';
@@ -45,16 +46,21 @@ async function init() {
 
   const tracker = new PositionTracker();
   map.addLayer(createPositionLayer(tracker));
+  /** Last location error, shown while searching from GPS; cleared by a fix. */
+  let locationError = null;
   const showLocationProblem = (error) => {
-    $('accuracy').hidden = false;
-    $('accuracy').textContent = `No location: ${error.message}. Tap a dispenser on the map instead.`;
+    locationError = error;
+    renderSearchState();
   };
-  addButton(new LocateControl(tracker, { onError: showLocationProblem }));
+  // Search from GPS by default, or from the last tapped spot; locate returns to GPS.
+  const search = new SearchPoint();
+  map.addLayer(search.layer);
+  addButton(new LocateControl(tracker, { onError: showLocationProblem, onPress: () => search.useGps() }));
 
   /** @type {object[]} */
   let features = [];
-  /** @type {{ lon: number, lat: number, accuracy: number } | null} */
-  let fix = null;
+  /** Latest GPS accuracy in metres, for the warning shown in gps mode. */
+  let accuracy = null;
   let centredOnUser = false;
 
   const userFloorSelect = $('user-floor');
@@ -66,18 +72,36 @@ async function init() {
     map.getView().animate({ center: fromLonLat(feature.geometry.coordinates), zoom: 19, duration: 400 });
   };
 
+  /** Heading and GPS warning follow the search mode. */
+  const renderSearchState = () => {
+    const pinned = search.mode === 'pin';
+    $('sheet-title').textContent = pinned ? 'Nearest to the pin' : 'Nearest to you';
+    const poor = !pinned && accuracy !== null && accuracy > CONFIG.poorAccuracyMetres;
+    const message = pinned
+      ? ''
+      : locationError
+        ? `No location: ${locationError.message}. Tap the map to search from a spot.`
+        : poor
+          ? `GPS accuracy is about ${Math.round(accuracy)} m indoors, so the order is approximate. Tap the map to search from a spot instead.`
+          : '';
+    $('accuracy').hidden = !message;
+    $('accuracy').textContent = message;
+  };
+
   const renderResults = () => {
+    renderSearchState();
     const list = $('results');
     if (features.length === 0) {
       list.replaceChildren(Object.assign(document.createElement('li'), { textContent: 'No dispensers in the dataset yet.' }));
       return;
     }
-    if (!fix) {
-      list.replaceChildren(Object.assign(document.createElement('li'), { textContent: 'Waiting for your location...' }));
+    const origin = search.origin;
+    if (!origin) {
+      list.replaceChildren(Object.assign(document.createElement('li'), { textContent: 'Waiting for your location... or tap the map to search from a spot.' }));
       return;
     }
 
-    const ranked = rankDispensers(features, fix, userFloorSelect.value, CONFIG).slice(0, RESULT_COUNT);
+    const ranked = rankDispensers(features, origin, userFloorSelect.value, CONFIG).slice(0, RESULT_COUNT);
     if (ranked.length === 0) {
       list.replaceChildren(Object.assign(document.createElement('li'), { textContent: 'All known dispensers are empty.' }));
       return;
@@ -122,18 +146,30 @@ async function init() {
 
   $('refresh').addEventListener('click', loadData);
 
+  search.addEventListener('change', renderResults);
+
+  // Tap a dispenser to show it; tap anywhere else to search from that spot.
+  map.on('singleclick', (event) => {
+    const hit = map.forEachFeatureAtPixel(event.pixel, (f) => f, { layerFilter: (l) => l === dispensers.layer, hitTolerance: 6 });
+    if (hit) {
+      dispensers.select(hit.getId());
+      return;
+    }
+    const [lon, lat] = toLonLat(event.coordinate);
+    search.setPin({ lon, lat });
+  });
+
   await loadData();
 
   tracker.addEventListener('fix', ({ detail: next }) => {
-    fix = next;
-    const poor = next.accuracy > CONFIG.poorAccuracyMetres;
-    $('accuracy').hidden = !poor;
-    $('accuracy').textContent = poor ? `GPS accuracy is about ${Math.round(next.accuracy)} m indoors, so the order is approximate.` : '';
-    if (!centredOnUser) {
+    accuracy = next.accuracy;
+    locationError = null;
+    if (!centredOnUser && search.mode === 'gps') {
       centreOn(map, next);
       centredOnUser = true;
     }
-    renderResults();
+    search.setGps(next); // re-ranks only while searching from GPS
+    renderSearchState();
   });
   tracker.addEventListener('error', ({ detail }) => showLocationProblem(detail));
   // The Finder needs the position from the start; the Editor starts it on demand.

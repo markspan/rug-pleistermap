@@ -74,9 +74,11 @@ export function centreOn(map, { lon, lat }) {
 export class LocateControl extends Control {
   /**
    * @param {PositionTracker} tracker
-   * @param {{ onError?: (error: Error) => void }} [options]
+   * @param {{ onError?: (error: Error) => void, onPress?: () => void }} [options]
+   *   onPress runs on every press, before centring (the Finder uses it to
+   *   switch its search back to the GPS position).
    */
-  constructor(tracker, { onError } = {}) {
+  constructor(tracker, { onError, onPress } = {}) {
     const button = document.createElement('button');
     button.type = 'button';
     button.title = 'Show my location';
@@ -109,6 +111,7 @@ export class LocateControl extends Control {
     });
 
     button.addEventListener('click', () => {
+      onPress?.();
       if (tracker.fix) {
         centreOn(this.getMap(), tracker.fix);
         return;
