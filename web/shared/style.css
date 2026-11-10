@@ -78,16 +78,24 @@ body.placing #map { cursor: crosshair; outline: 3px solid var(--rug-red); outlin
 .segmented button[aria-pressed='true'] { background: var(--rug-red); color: #fff; border-color: var(--rug-red); font-weight: 600; }
 
 /* Locate button: below OpenLayers' zoom buttons, same look. */
-/* Same size as OpenLayers' zoom buttons (its default 1.375em); stacked under
-   them with a 6px gap: zoom group ends 55px below the map's top edge. */
-.locate { top: 61px; left: 0.5em; }
-.locate button { display: grid; place-items: center; }
+/* Map buttons: one column top-left (zoom, base map, locate), filled by
+   addButton() in mapCore.js. Controls inside it flow instead of using
+   OpenLayers' absolute positions, so spacing survives any font size. */
+.map-buttons {
+  position: absolute; top: 0.5em; left: 0.5em; z-index: 5;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+}
+.map-buttons .ol-control { position: static; }
+.locate button, .basemap-toggle button { display: grid; place-items: center; }
+/* Icons scale with the button (and the phone text size), like the + and - glyphs. */
+.map-buttons button svg { width: 0.8em; height: 0.8em; }
+/* Fixed order whatever the order of addButton() calls: zoom, locate, base map. */
+.map-buttons .ol-zoom { order: 0; }
+.map-buttons .locate { order: 1; }
+.map-buttons .basemap-toggle { order: 2; }
 .locate button.busy svg { animation: locate-pulse 1s ease-in-out infinite; }
 @keyframes locate-pulse { 50% { opacity: 0.3; } }
 
-/* Base map toggle: same size again, 6px under the locate button. */
-.basemap-toggle { top: 91px; left: 0.5em; }
-.basemap-toggle button { display: grid; place-items: center; }
 .basemap-toggle button.active { background: var(--rug-red); color: #fff; }
 
 /* Map credits stay above any open bottom sheet (--sheet-h is set in mapCore.js). */
