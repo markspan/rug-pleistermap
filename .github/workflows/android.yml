@@ -1,22 +1,23 @@
-# Builds the Bandaid Finder and Bandaid Editor APKs.
+# Builds the Bandaid Finder APK. (The Editor is built in the private
+# repository markspan/rug-pleistermap-editor.)
 #
 # - Every push to main (except dataset and docs changes) produces signed APKs
 #   as workflow artifacts, for testing. No release.
-# - Releasing: Actions tab > "Android APKs" > Run workflow, enter a version
+# - Releasing: Actions tab > "Finder APK" > Run workflow, enter a version
 #   like 0.2.3. The workflow builds, creates tag v0.2.3 and a GitHub Release
-#   with both APKs. Pushing a tag v0.2.3 yourself does the same.
+#   with the Finder APK. Pushing a tag v0.2.3 yourself does the same.
 # - The version is stamped into the APKs (scripts/patch-android.mjs), so each
 #   release installs as an update over the previous one.
 # - Without the signing secrets (see README) debug APKs are built instead,
 #   which must be uninstalled before updating.
-name: Android APKs
+name: Finder APK
 
 on:
   push:
     branches: [main]
     tags: ['v*']
     paths-ignore:
-      - 'public/data/**' # dataset commits from the Editor app must not trigger builds
+      - 'public/data/**' # bundled offline copy only; refreshed from the data repo at build time
       - '**.md'
   workflow_dispatch:
     inputs:
@@ -68,7 +69,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        app: [finder, editor]
+        app: [finder]
     env:
       HAS_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
       APP_VERSION: ${{ needs.prepare.outputs.version }}
@@ -118,7 +119,7 @@ jobs:
         working-directory: apps/${{ matrix.app }}
         run: |
           [ -d android ] || npx cap add android
-          node ../../scripts/patch-android.mjs ${{ matrix.app }}
+          node ../../scripts/patch-android.mjs .
           npx cap sync android
 
       - name: Build debug APK

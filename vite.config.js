@@ -1,12 +1,13 @@
 /**
- * One Vite config for both apps. The mode selects the app:
+ * Vite config for the Finder. The mode selects the app (only `finder` lives
+ * here; the Editor is built from its private repository):
  *   vite --mode finder        dev server for web/finder
- *   vite build --mode editor  production build into dist/editor
+ *   vite build --mode finder  production build into dist/finder
  */
 import { defineConfig } from 'vite';
 import { fileURLToPath } from 'node:url';
 
-const APPS = ['finder', 'editor'];
+const APPS = ['finder'];
 const fromRoot = (path) => fileURLToPath(new URL(path, import.meta.url));
 
 export default defineConfig(({ mode }) => {
