@@ -12,6 +12,7 @@ import { createMapCore } from '../shared/mapCore.js';
 import { GitHubDataset, mutations, normalizeFeature } from '../shared/dataset.js';
 import { fillStatus } from '../shared/dispenserLayer.js';
 import { loadToken, saveToken, forgetToken } from './token.js';
+import { PositionTracker, createPositionLayer, LocateControl } from '../shared/locate.js';
 
 const $ = (id) => document.getElementById(id);
 const setStatus = (text) => ($('status').textContent = text);
@@ -28,6 +29,11 @@ async function init() {
     floorPanel: $('floors'),
     onTileError: () => setStatus('Floor plans could not be loaded'),
   });
+
+  // Location is optional here: the tracker starts on the first tap of the locate button.
+  const tracker = new PositionTracker();
+  map.addLayer(createPositionLayer(tracker));
+  map.addControl(new LocateControl(tracker, { onError: (error) => setStatus(`No location: ${error.message}`) }));
 
   /** @type {GitHubDataset|null} */
   let dataset = null;

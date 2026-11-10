@@ -11,15 +11,17 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
+/** Required by @capacitor/geolocation (both apps have the locate button). */
+const LOCATION = [
+  '<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />',
+  '<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />',
+  '<uses-feature android:name="android.hardware.location.gps" android:required="false" />',
+];
+
 /** Manifest lines per app, inserted before <application>. */
 const MANIFEST_ADDITIONS = {
-  finder: [
-    // Required by @capacitor/geolocation.
-    '<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />',
-    '<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />',
-    '<uses-feature android:name="android.hardware.location.gps" android:required="false" />',
-  ],
-  editor: [],
+  finder: LOCATION,
+  editor: LOCATION,
 };
 
 const app = process.argv[2];

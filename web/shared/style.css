@@ -76,3 +76,9 @@ body.placing #map { cursor: crosshair; outline: 3px solid var(--rug-red); outlin
 .segmented { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
 .segmented button { min-height: var(--tap); border: 1px solid #ccc; border-radius: 8px; background: #fafafa; }
 .segmented button[aria-pressed='true'] { background: var(--rug-red); color: #fff; border-color: var(--rug-red); font-weight: 600; }
+
+/* Locate button: below OpenLayers' zoom buttons, same look. */
+.locate { top: 4.4em; left: 0.5em; }
+.locate button { display: grid; place-items: center; width: 2.4rem; height: 2.4rem; }
+.locate button.busy svg { animation: locate-pulse 1s ease-in-out infinite; }
+@keyframes locate-pulse { 50% { opacity: 0.3; } }

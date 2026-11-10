@@ -4,7 +4,7 @@
  * browser Geolocation API on the web.
  */
 import { Geolocation } from '@capacitor/geolocation';
-import { IS_NATIVE } from '../shared/config.js';
+import { IS_NATIVE } from './config.js';
 
 /**
  * @param {(fix: { lon: number, lat: number, accuracy: number }) => void} onFix
