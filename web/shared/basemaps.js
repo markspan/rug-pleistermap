@@ -1,5 +1,5 @@
 /**
- * Selectable base maps (street map or aerial photo) and the switch for them.
+ * Selectable base maps (street map or aerial photo) and the toggle for them.
  *
  * The aerial photo is the Dutch national "Actueel_orthoHR" orthophoto from
  * PDOK (Beeldmateriaal Nederland), open data under CC BY 4.0, served as
@@ -75,26 +75,38 @@ export function createBasemaps(overlays) {
     control?.sync(spec.id);
   };
 
-  /** Two-segment switch in the map's top-left corner, under the locate button. */
+  /**
+   * One small toggle under the locate button. Each press moves to the next
+   * base map (with two: map <-> aerial). Its label names the map it switches
+   * TO; it is tinted while a non-default base map is showing.
+   */
   class BasemapControl extends Control {
     constructor() {
+      const button = document.createElement('button');
+      button.type = 'button';
+      // Layers icon, drawn inline so it needs no icon font.
+      button.innerHTML =
+        '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">' +
+        '<path d="M12 3 2 8l10 5 10-5z"/><path d="m2 13 10 5 10-5"/></svg>';
       const element = document.createElement('div');
-      element.className = 'basemap-switch ol-unselectable ol-control';
-      element.setAttribute('role', 'group');
-      element.setAttribute('aria-label', 'Background');
+      element.className = 'basemap-toggle ol-unselectable ol-control';
+      element.append(button);
       super({ element });
-      this.buttons = BASEMAPS.map((spec) => {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.textContent = spec.label;
-        button.addEventListener('click', () => select(spec.id));
-        element.append(button);
-        return { id: spec.id, button };
+
+      this.button = button;
+      button.addEventListener('click', () => {
+        const index = BASEMAPS.findIndex((b) => b.id === current);
+        select(BASEMAPS[(index + 1) % BASEMAPS.length].id);
       });
     }
 
     sync(id) {
-      this.buttons.forEach(({ id: buttonId, button }) => button.setAttribute('aria-pressed', String(buttonId === id)));
+      const index = BASEMAPS.findIndex((b) => b.id === id);
+      const next = BASEMAPS[(index + 1) % BASEMAPS.length];
+      const label = `Switch to ${next.label.toLowerCase()}`;
+      this.button.title = label;
+      this.button.setAttribute('aria-label', label);
+      this.button.classList.toggle('active', index > 0);
     }
   }
 
