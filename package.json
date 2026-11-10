@@ -1,6 +1,6 @@
 {
   "name": "rug-pleistermap",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "description": "Bandaid Finder and Bandaid Editor: Android apps on top of the RUG Maps floor plans",
   "private": true,
   "type": "module",
