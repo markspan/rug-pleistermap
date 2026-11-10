@@ -48,10 +48,12 @@ Empty dispensers are skipped.
 
 1. **Repository.** Push this project to a *public* GitHub repository and set
    `CONFIG.dataset` in `web/shared/config.js` to match (default `markspan/rug-pleistermap`, branch `main`).
-2. **Build the APKs.** Every push to `main` runs `.github/workflows/android.yml`. Download
-   the APKs from the run's *Artifacts*, or push a tag (`git tag v0.2.0 && git push --tags`)
-   to get them attached to a GitHub Release, which is easier to open on a phone.
-   Installing needs "Install unknown apps" allowed for your browser or file manager.
+2. **Release the APKs.** On GitHub: **Actions > Android APKs > Run workflow**, enter a
+   version higher than the last release (e.g. `0.2.3`), **Run workflow**. In about 3 minutes
+   tag `v0.2.3` and a Release with `bandaid-finder.apk` and `bandaid-editor.apk` appear.
+   Pushes to `main` only make test APKs (the run's *Artifacts*). Pushing a `v*` tag yourself
+   also makes a release. The version is stamped into the APKs, so each release installs as
+   an update. Installing needs "Install unknown apps" allowed for your browser.
 3. **Editor token.** On github.com: Settings, Developer settings, Fine-grained tokens.
    Repository access: only this repository. Permissions: *Contents: Read and write*.
    Paste it in the Editor's settings (gear icon). It is stored on the phone only.
