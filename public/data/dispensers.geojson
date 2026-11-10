@@ -76,6 +76,25 @@
         "fill": 100,
         "checkedAt": "2026-11-10T13:07:39.875Z"
       }
+    },
+    {
+      "type": "Feature",
+      "id": "b6e7be30-35b8-40e1-bff2-d697e116d5d6",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.5566333,
+          53.0098656
+        ]
+      },
+      "properties": {
+        "floor": "01",
+        "building": "1",
+        "room": "Bedroom",
+        "note": "",
+        "fill": 100,
+        "checkedAt": "2026-11-10T13:40:29.204Z"
+      }
     }
   ]
 }
