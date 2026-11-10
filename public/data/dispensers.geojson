@@ -22,6 +22,25 @@
     },
     {
       "type": "Feature",
+      "id": "95d05571-e08d-49dc-9122-7a6112ae67aa",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.5566203,
+          53.0099124
+        ]
+      },
+      "properties": {
+        "floor": "00",
+        "building": "1",
+        "room": "Kitchen",
+        "note": "",
+        "fill": 100,
+        "checkedAt": "2026-11-10T13:39:27.291Z"
+      }
+    },
+    {
+      "type": "Feature",
       "id": "b3723049-bfc7-4812-ad9f-ae07f21c64c8",
       "geometry": {
         "type": "Point",
