@@ -83,7 +83,7 @@ export class LocateControl extends Control {
     button.setAttribute('aria-label', 'Show my location');
     // Crosshair icon, drawn inline so it needs no icon font.
     button.innerHTML =
-      '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">' +
+      '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2">' +
       '<circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>' +
       '<path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>';
 

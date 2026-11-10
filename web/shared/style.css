@@ -78,14 +78,16 @@ body.placing #map { cursor: crosshair; outline: 3px solid var(--rug-red); outlin
 .segmented button[aria-pressed='true'] { background: var(--rug-red); color: #fff; border-color: var(--rug-red); font-weight: 600; }
 
 /* Locate button: below OpenLayers' zoom buttons, same look. */
-.locate { top: 4.4em; left: 0.5em; }
-.locate button { display: grid; place-items: center; width: 2.4rem; height: 2.4rem; }
+/* Same size as OpenLayers' zoom buttons (its default 1.375em); stacked under
+   them with a 6px gap: zoom group ends 55px below the map's top edge. */
+.locate { top: 61px; left: 0.5em; }
+.locate button { display: grid; place-items: center; }
 .locate button.busy svg { animation: locate-pulse 1s ease-in-out infinite; }
 @keyframes locate-pulse { 50% { opacity: 0.3; } }
 
-/* Base map toggle: same size as the locate button, directly under it. */
-.basemap-toggle { top: 7.2em; left: 0.5em; }
-.basemap-toggle button { display: grid; place-items: center; width: 2.4rem; height: 2.4rem; }
+/* Base map toggle: same size again, 6px under the locate button. */
+.basemap-toggle { top: 91px; left: 0.5em; }
+.basemap-toggle button { display: grid; place-items: center; }
 .basemap-toggle button.active { background: var(--rug-red); color: #fff; }
 
 /* Map credits stay above any open bottom sheet (--sheet-h is set in mapCore.js). */
