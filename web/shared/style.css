@@ -82,3 +82,15 @@ body.placing #map { cursor: crosshair; outline: 3px solid var(--rug-red); outlin
 .locate button { display: grid; place-items: center; width: 2.4rem; height: 2.4rem; }
 .locate button.busy svg { animation: locate-pulse 1s ease-in-out infinite; }
 @keyframes locate-pulse { 50% { opacity: 0.3; } }
+
+/* Base map switch: under the locate button, two segments. */
+.basemap-switch { top: 7.6em; left: 0.5em; display: flex; padding: 2px; }
+.basemap-switch button {
+  width: auto; height: 2rem; padding: 0 0.6rem; margin: 0; font-size: 0.8rem; font-weight: 500;
+  border-radius: 2px; background: rgba(255, 255, 255, 0.9); color: #333;
+}
+.basemap-switch button + button { margin-left: 2px; }
+.basemap-switch button[aria-pressed='true'] { background: var(--rug-red); color: #fff; }
+
+/* Map credits stay above any open bottom sheet (--sheet-h is set in mapCore.js). */
+#map .ol-attribution { bottom: var(--sheet-h, 0px); transition: bottom 0.15s; }
