@@ -2,42 +2,19 @@
  * Bandaid Finder: shows dispensers and lists the nearest non-empty ones,
  * based on GPS position plus the floor the user says they are on.
  */
-import VectorLayer from 'ol/layer/Vector.js';
-import VectorSource from 'ol/source/Vector.js';
-import Feature from 'ol/Feature.js';
-import Point from 'ol/geom/Point.js';
-import { circular } from 'ol/geom/Polygon.js';
 import { fromLonLat } from 'ol/proj.js';
-import { Style, Circle, Fill, Stroke } from 'ol/style.js';
 import { CONFIG } from '../shared/config.js';
 import { createMapCore } from '../shared/mapCore.js';
 import { fetchPublic } from '../shared/dataset.js';
 import { fillStatus } from '../shared/dispenserLayer.js';
 import { rankDispensers, describeRoute } from './nearest.js';
-import { watchLocation } from './location.js';
+import { PositionTracker, createPositionLayer, LocateControl, centreOn } from '../shared/locate.js';
 
 const RESULT_COUNT = 3;
 const USER_FLOOR_KEY = 'bandaid-finder.userFloor';
 
 const $ = (id) => document.getElementById(id);
 const setStatus = (text) => ($('status').textContent = text);
-
-/** Layer with the user's position dot and GPS accuracy circle. */
-function createPositionLayer() {
-  const dot = new Feature();
-  const halo = new Feature();
-  dot.setStyle(new Style({ image: new Circle({ radius: 7, fill: new Fill({ color: '#1971c2' }), stroke: new Stroke({ color: '#fff', width: 2 }) }) }));
-  halo.setStyle(new Style({ fill: new Fill({ color: 'rgba(25,113,194,0.12)' }), stroke: new Stroke({ color: 'rgba(25,113,194,0.5)', width: 1 }) }));
-  const layer = new VectorLayer({ source: new VectorSource({ features: [halo, dot] }), zIndex: 90 });
-
-  return {
-    layer,
-    update({ lon, lat, accuracy }) {
-      dot.setGeometry(new Point(fromLonLat([lon, lat])));
-      halo.setGeometry(circular([lon, lat], accuracy, 48).transform('EPSG:4326', 'EPSG:3857'));
-    },
-  };
-}
 
 /** Floor the user says they are on; remembered between launches. */
 function mountUserFloor(select, onChange) {
@@ -66,8 +43,13 @@ async function init() {
     onTileError: () => setStatus('Floor plans could not be loaded'),
   });
 
-  const position = createPositionLayer();
-  map.addLayer(position.layer);
+  const tracker = new PositionTracker();
+  map.addLayer(createPositionLayer(tracker));
+  const showLocationProblem = (error) => {
+    $('accuracy').hidden = false;
+    $('accuracy').textContent = `No location: ${error.message}. Tap a dispenser on the map instead.`;
+  };
+  map.addControl(new LocateControl(tracker, { onError: showLocationProblem }));
 
   /** @type {object[]} */
   let features = [];
@@ -142,24 +124,20 @@ async function init() {
 
   await loadData();
 
-  watchLocation(
-    (next) => {
-      fix = next;
-      position.update(next);
-      const poor = next.accuracy > CONFIG.poorAccuracyMetres;
-      $('accuracy').hidden = !poor;
-      $('accuracy').textContent = poor ? `GPS accuracy is about ${Math.round(next.accuracy)} m indoors, so the order is approximate.` : '';
-      if (!centredOnUser) {
-        map.getView().animate({ center: fromLonLat([next.lon, next.lat]), duration: 400 });
-        centredOnUser = true;
-      }
-      renderResults();
-    },
-    (error) => {
-      $('accuracy').hidden = false;
-      $('accuracy').textContent = `No location: ${error.message}. Tap a dispenser on the map instead.`;
-    },
-  );
+  tracker.addEventListener('fix', ({ detail: next }) => {
+    fix = next;
+    const poor = next.accuracy > CONFIG.poorAccuracyMetres;
+    $('accuracy').hidden = !poor;
+    $('accuracy').textContent = poor ? `GPS accuracy is about ${Math.round(next.accuracy)} m indoors, so the order is approximate.` : '';
+    if (!centredOnUser) {
+      centreOn(map, next);
+      centredOnUser = true;
+    }
+    renderResults();
+  });
+  tracker.addEventListener('error', ({ detail }) => showLocationProblem(detail));
+  // The Finder needs the position from the start; the Editor starts it on demand.
+  tracker.start();
 }
 
 init();
