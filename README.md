@@ -16,7 +16,7 @@ apps/finder/  Capacitor Android shell for the Finder (android/ is generated in C
 apps/editor/  Capacitor Android shell for the Editor
 scripts/      patch-android.mjs: manifest permissions, applied after `cap add android`
 test/         unit tests for ranking and dataset logic (node --test)
-public/data/  dispensers.geojson: the dataset
+public/data/  offline copy of the dataset bundled into the APKs (refreshed at each build)
 ```
 
 **Floor plans.** RUG Maps serves vector tiles from pg_tileserv at
@@ -25,15 +25,19 @@ as RUG Maps does: `app_views.rooms/{z}/{x}/{y}.pbf?filter=floor='01'`. Floor cod
 strings (`-1`, `-S`, `00`, `0T`, `01`, `2T`, ...). On Android, tiles are fetched via
 `CapacitorHttp` (native, so the tile server's CORS policy does not matter).
 
-**Dataset.** `public/data/dispensers.geojson` in this public repository is the database.
+**Dataset.** `dispensers.geojson` in the separate public repository
+[`markspan/rug-pleistermap-data`](https://github.com/markspan/rug-pleistermap-data) is the database.
+It is kept apart from the code so the Editor's token can only reach the data: a leaked token can
+change dispensers (undoable from git history), never the apps.
 
 - The Finder reads it anonymously from `raw.githubusercontent.com`, with the copy bundled
-  in the APK as offline fallback. GitHub's CDN can serve a copy up to a few minutes old.
+  in the APK as offline fallback. CI refreshes that copy from the data repository at every build. GitHub's CDN can serve a copy up to a few minutes old.
 - The Editor writes it through the GitHub Contents API. Every change is one commit, so
   the git history is the audit log. Saves use optimistic locking: if another phone
   committed in between, the Editor re-reads and re-applies its change instead of
   overwriting.
-- Dataset commits do not trigger app builds (`paths-ignore` in the workflow).
+- Dataset commits happen in the data repository, so they never trigger app builds.
+- Android backup is disabled for the Editor, so the token never leaves the phone.
 
 Feature properties: `floor`, `building`, `room`, `note`, `fill` (0 to 100, or null if
 never checked) and `checkedAt` (ISO time). See `web/shared/dataset.js`.
@@ -55,7 +59,8 @@ Empty dispensers are skipped.
    also makes a release. The version is stamped into the APKs, so each release installs as
    an update. Installing needs "Install unknown apps" allowed for your browser.
 3. **Editor token.** On github.com: Settings, Developer settings, Fine-grained tokens.
-   Repository access: only this repository. Permissions: *Contents: Read and write*.
+   Repository access: only `rug-pleistermap-data` (never the code repository).
+   Permissions: *Contents: Read and write*.
    Paste it in the Editor's settings (gear icon). It is stored on the phone only.
 
 ### Stable signing (recommended)
