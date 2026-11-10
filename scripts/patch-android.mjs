@@ -41,6 +41,13 @@ const MANIFEST_ADDITIONS = {
   editor: LOCATION,
 };
 
+/**
+ * Apps whose data must not leave the phone. The Editor stores the GitHub
+ * token; Android's automatic backup would otherwise copy it to the user's
+ * Google account (Capacitor's template sets allowBackup="true").
+ */
+const NO_BACKUP = new Set(['editor']);
+
 const app = process.argv[2];
 if (!(app in MANIFEST_ADDITIONS)) {
   console.error(`Usage: patch-android.mjs <${Object.keys(MANIFEST_ADDITIONS).join('|')}>`);
@@ -53,8 +60,13 @@ let manifest = readFileSync(manifestPath, 'utf8');
 const missing = MANIFEST_ADDITIONS[app].filter((line) => !manifest.includes(line));
 if (missing.length > 0) {
   manifest = manifest.replace(/(\s*)<application/, (match, indent) => `${missing.map((l) => `${indent}${l}`).join('')}${match}`);
-  writeFileSync(manifestPath, manifest);
 }
+if (NO_BACKUP.has(app)) {
+  manifest = manifest.replace(/android:allowBackup="true"/, 'android:allowBackup="false"');
+  if (!manifest.includes('android:allowBackup="false"')) throw new Error('Could not disable allowBackup: manifest layout changed');
+  console.log(`${app}: Android backup disabled`);
+}
+writeFileSync(manifestPath, manifest);
 console.log(`${app}: ${missing.length} manifest entr${missing.length === 1 ? 'y' : 'ies'} added`);
 
 const version = process.env.APP_VERSION?.replace(/^v/, '');

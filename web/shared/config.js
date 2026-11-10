@@ -36,14 +36,18 @@ export const CONFIG = Object.freeze({
   zoom: 17,
 
   /**
-   * The dispenser dataset lives in a public GitHub repository.
-   * Finder reads it anonymously; Editor writes it via the Contents API.
+   * The dispenser dataset lives in its own public GitHub repository, apart
+   * from the app code. The Editor's token is scoped to that repository only,
+   * so a leaked token can change dispenser data (undoable from git history)
+   * but never the apps' code. Finder reads it anonymously; Editor writes it
+   * via the Contents API. public/data/dispensers.geojson in this repository
+   * is only the offline copy bundled into the APKs, refreshed at each build.
    */
   dataset: {
     owner: 'markspan',
-    repo: 'rug-pleistermap',
+    repo: 'rug-pleistermap-data',
     branch: 'main',
-    path: 'public/data/dispensers.geojson',
+    path: 'dispensers.geojson',
   },
 
   /** Fill levels offered in the Editor, as percentages. */
