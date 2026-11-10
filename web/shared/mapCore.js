@@ -9,6 +9,7 @@ import Map from 'ol/Map.js';
 import View from 'ol/View.js';
 import { fromLonLat } from 'ol/proj.js';
 import { defaults as defaultControls } from 'ol/control/defaults.js';
+import Zoom from 'ol/control/Zoom.js';
 import { CONFIG } from './config.js';
 import { FloorState, mountFloorSwitcher } from './floors.js';
 import { createIndoorLayers } from './indoor.js';
@@ -49,9 +50,25 @@ export function createMapCore({ target, floorPanel, onTileError }) {
 
   const map = new Map({
     target,
-    controls: defaultControls({ rotate: false }),
+    // Zoom is added below, into the button column, instead of at its default spot.
+    controls: defaultControls({ rotate: false, zoom: false }),
     view: new View({ center: fromLonLat(CONFIG.center), zoom: CONFIG.zoom, maxZoom: 22 }),
   });
+
+  /**
+   * One column for the map buttons (zoom, base map, and the apps' locate
+   * button). They stack by layout, not by fixed offsets, so they stay evenly
+   * spaced whatever the phone's font size makes each button's height.
+   */
+  const buttonColumn = document.createElement('div');
+  buttonColumn.className = 'map-buttons';
+  map.getTargetElement().append(buttonColumn);
+  /** Add an OpenLayers control to the button column, in call order. */
+  const addButton = (control) => {
+    control.setTarget(buttonColumn); // must precede addControl
+    map.addControl(control);
+  };
+  addButton(new Zoom());
 
   mountFloorSwitcher(floorPanel, floors);
 
@@ -64,7 +81,7 @@ export function createMapCore({ target, floorPanel, onTileError }) {
 
   const basemaps = createBasemaps(indoorLayers);
   basemaps.layers.forEach((layer) => map.addLayer(layer));
-  map.addControl(basemaps.control);
+  addButton(basemaps.control);
 
   if (onTileError) {
     let reported = false;
@@ -83,5 +100,5 @@ export function createMapCore({ target, floorPanel, onTileError }) {
 
   const roomsLayer = indoorLayers.find((l) => l.get('kind') === 'room');
 
-  return { map, floors, dispensers, roomsLayer };
+  return { map, floors, dispensers, roomsLayer, addButton };
 }

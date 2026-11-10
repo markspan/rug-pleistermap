@@ -37,7 +37,7 @@ function mountUserFloor(select, onChange) {
 }
 
 async function init() {
-  const { map, floors, dispensers } = createMapCore({
+  const { map, floors, dispensers, addButton } = createMapCore({
     target: 'map',
     floorPanel: $('floors'),
     onTileError: () => setStatus('Floor plans could not be loaded'),
@@ -49,7 +49,7 @@ async function init() {
     $('accuracy').hidden = false;
     $('accuracy').textContent = `No location: ${error.message}. Tap a dispenser on the map instead.`;
   };
-  map.addControl(new LocateControl(tracker, { onError: showLocationProblem }));
+  addButton(new LocateControl(tracker, { onError: showLocationProblem }));
 
   /** @type {object[]} */
   let features = [];
