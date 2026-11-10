@@ -3,6 +3,25 @@
   "features": [
     {
       "type": "Feature",
+      "id": "0cb1f6a2-99af-474a-8146-4a90eece49c5",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.5575719,
+          53.2230338
+        ]
+      },
+      "properties": {
+        "floor": "02",
+        "building": "2211",
+        "room": "0234",
+        "note": "",
+        "fill": 100,
+        "checkedAt": "2026-11-10T13:11:32.518Z"
+      }
+    },
+    {
+      "type": "Feature",
       "id": "b3723049-bfc7-4812-ad9f-ae07f21c64c8",
       "geometry": {
         "type": "Point",
