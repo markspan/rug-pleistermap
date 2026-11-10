@@ -86,7 +86,7 @@ export function createBasemaps(overlays) {
       button.type = 'button';
       // Layers icon, drawn inline so it needs no icon font.
       button.innerHTML =
-        '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">' +
+        '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">' +
         '<path d="M12 3 2 8l10 5 10-5z"/><path d="m2 13 10 5 10-5"/></svg>';
       const element = document.createElement('div');
       element.className = 'basemap-toggle ol-unselectable ol-control';
