@@ -1,0 +1,96 @@
+# Builds the Bandaid Finder and Bandaid Editor APKs.
+#
+# - Every push to main (except dataset and docs changes) produces APKs as
+#   workflow artifacts.
+# - Pushing a tag like v1.0.0 also attaches them to a GitHub Release, which
+#   is the easiest place to download them on a phone.
+# - With the signing secrets set (see README) the APKs are release-signed
+#   with a stable key, so new versions install over old ones. Without them a
+#   debug build is produced, which must be uninstalled before updating.
+name: Android APKs
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+    paths-ignore:
+      - 'public/data/**' # dataset commits from the Editor app must not trigger builds
+      - '**.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write # needed to attach APKs to a release on tags
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [finder, editor]
+    env:
+      HAS_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web app
+        run: npm run build:${{ matrix.app }}
+
+      - name: Generate and sync Android project
+        working-directory: apps/${{ matrix.app }}
+        run: |
+          [ -d android ] || npx cap add android
+          node ../../scripts/patch-android.mjs ${{ matrix.app }}
+          npx cap sync android
+
+      - name: Build debug APK
+        if: env.HAS_KEYSTORE != 'true'
+        working-directory: apps/${{ matrix.app }}/android
+        run: |
+          ./gradlew --no-daemon assembleDebug
+          mkdir -p "$GITHUB_WORKSPACE/out"
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/out/bandaid-${{ matrix.app }}-debug.apk"
+
+      - name: Build and sign release APK
+        if: env.HAS_KEYSTORE == 'true'
+        working-directory: apps/${{ matrix.app }}/android
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          ./gradlew --no-daemon assembleRelease
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          BUILD_TOOLS="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
+          mkdir -p "$GITHUB_WORKSPACE/out"
+          "$BUILD_TOOLS/zipalign" -f -p 4 app/build/outputs/apk/release/app-release-unsigned.apk "$RUNNER_TEMP/aligned.apk"
+          "$BUILD_TOOLS/apksigner" sign \
+            --ks "$RUNNER_TEMP/release.jks" --ks-pass env:KEYSTORE_PASSWORD --ks-key-alias "$KEY_ALIAS" \
+            --out "$GITHUB_WORKSPACE/out/bandaid-${{ matrix.app }}.apk" "$RUNNER_TEMP/aligned.apk"
+          rm "$RUNNER_TEMP/release.jks"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bandaid-${{ matrix.app }}
+          path: out/*.apk
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: out/*.apk

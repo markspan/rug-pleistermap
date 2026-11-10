@@ -1,0 +1,78 @@
+/* Shared layout: full-screen map, floating controls, bottom sheets. Mobile first. */
+:root {
+  --rug-red: #dc002d;
+  --panel: rgba(255, 255, 255, 0.97);
+  --shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
+  --tap: 2.75rem; /* minimum touch target */
+  font-family: system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overscroll-behavior: none; }
+body { display: flex; flex-direction: column; }
+button, input, select { font: inherit; }
+
+.bar {
+  display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+  padding: calc(env(safe-area-inset-top) + 0.5rem) 1rem 0.5rem;
+  background: var(--rug-red); color: #fff;
+}
+.bar h1 { margin: 0; font-size: 1.1rem; }
+#status { font-size: 0.85rem; opacity: 0.92; flex: 1; }
+.bar-button { min-width: var(--tap); min-height: var(--tap); border: 0; background: none; color: #fff; font-size: 1.3rem; }
+
+#map { flex: 1; position: relative; }
+body.placing #map { cursor: crosshair; outline: 3px solid var(--rug-red); outline-offset: -3px; }
+
+.floors {
+  position: absolute; right: 0.6rem; top: calc(env(safe-area-inset-top) + 4.5rem);
+  display: flex; flex-direction: column; gap: 1px; max-height: 45vh; overflow-y: auto;
+  background: var(--panel); border-radius: 8px; box-shadow: var(--shadow); padding: 3px;
+}
+.floors[hidden] { display: none; }
+.floors button { min-width: var(--tap); min-height: 2.2rem; border: 0; background: none; border-radius: 6px; }
+.floors button[aria-pressed='true'] { background: var(--rug-red); color: #fff; font-weight: 600; }
+
+.tools { position: absolute; left: 0.75rem; bottom: calc(env(safe-area-inset-bottom) + 1.5rem); }
+.tools button, .row button, .sheet-head button {
+  min-height: var(--tap); padding: 0 1rem; border-radius: 8px; border: 1px solid #ccc; background: var(--panel);
+}
+.tools button { box-shadow: var(--shadow); }
+#add-toggle[aria-pressed='true'] { background: var(--rug-red); color: #fff; border-color: var(--rug-red); }
+
+/* Bottom sheet: results in Finder, detail and settings in Editor. */
+.sheet {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 10;
+  max-height: 60vh; overflow-y: auto;
+  background: #fff; box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.2);
+  border-radius: 14px 14px 0 0; padding: 0.75rem 1rem calc(env(safe-area-inset-bottom) + 1rem);
+  display: grid; gap: 0.6rem;
+}
+.sheet[hidden] { display: none; }
+.sheet-head { display: flex; align-items: center; gap: 0.5rem; }
+.sheet-head h2 { margin: 0; font-size: 1rem; flex: 1; }
+.inline { display: flex; align-items: center; gap: 0.35rem; font-size: 0.9rem; }
+.inline select { min-height: 2.2rem; }
+.hint { margin: 0; font-size: 0.82rem; color: #555; }
+
+.results { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
+.result {
+  width: 100%; min-height: var(--tap); text-align: left; border: 1px solid #e3e3e3; border-radius: 10px;
+  background: #fafafa; padding: 0.5rem 0.75rem; display: grid; grid-template-columns: auto 1fr; column-gap: 0.6rem;
+}
+.result .badge { grid-row: span 2; align-self: center; width: 0.8rem; height: 0.8rem; border-radius: 50%; }
+.result .where { font-weight: 600; }
+.result .how { font-size: 0.85rem; color: #444; }
+
+.detail label, #settings label { display: grid; gap: 0.2rem; font-size: 0.85rem; }
+.detail input, #settings input { font-size: 1rem; padding: 0.55rem; border: 1px solid #ccc; border-radius: 6px; width: 100%; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+.row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.row .primary { background: var(--rug-red); color: #fff; border-color: var(--rug-red); }
+.row .danger { color: #b00020; border-color: #e0a0a8; }
+
+.fill { border: 0; padding: 0; margin: 0; }
+.fill legend { font-size: 0.85rem; margin-bottom: 0.3rem; padding: 0; }
+.segmented { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.segmented button { min-height: var(--tap); border: 1px solid #ccc; border-radius: 8px; background: #fafafa; }
+.segmented button[aria-pressed='true'] { background: var(--rug-red); color: #fff; border-color: var(--rug-red); font-weight: 600; }

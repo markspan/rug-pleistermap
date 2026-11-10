@@ -1,0 +1,8 @@
+{
+  "appId": "nl.rug.bandaid.finder",
+  "appName": "Bandaid Finder",
+  "webDir": "../../dist/finder",
+  "android": {
+    "allowMixedContent": false
+  }
+}

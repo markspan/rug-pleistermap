@@ -1,0 +1,13 @@
+{
+  "name": "@rug-pleistermap/finder",
+  "private": true,
+  "description": "Capacitor Android shell for Bandaid Finder; web code lives in web/finder",
+  "dependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/geolocation": "^8.2.4"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.6.0"
+  }
+}

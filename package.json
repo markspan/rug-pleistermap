@@ -1,0 +1,28 @@
+{
+  "name": "rug-pleistermap",
+  "version": "0.2.0",
+  "description": "Bandaid Finder and Bandaid Editor: Android apps on top of the RUG Maps floor plans",
+  "private": true,
+  "type": "module",
+  "license": "GPL-3.0-or-later",
+  "workspaces": [
+    "apps/finder",
+    "apps/editor"
+  ],
+  "scripts": {
+    "dev:finder": "vite --mode finder",
+    "dev:editor": "vite --mode editor",
+    "build:finder": "vite build --mode finder",
+    "build:editor": "vite build --mode editor",
+    "build": "npm run build:finder && npm run build:editor",
+    "test": "node --test \"test/**/*.test.js\""
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/geolocation": "^8.2.4",
+    "ol": "^10.11.0"
+  },
+  "devDependencies": {
+    "vite": "^7.0.0"
+  }
+}

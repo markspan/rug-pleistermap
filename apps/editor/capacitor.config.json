@@ -1,0 +1,8 @@
+{
+  "appId": "nl.rug.bandaid.editor",
+  "appName": "Bandaid Editor",
+  "webDir": "../../dist/editor",
+  "android": {
+    "allowMixedContent": false
+  }
+}

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#dc002d" />
+    <title>Bandaid Finder</title>
+  </head>
+  <body>
+    <header class="bar">
+      <h1>Bandaid Finder</h1>
+      <span id="status" role="status">Loading...</span>
+    </header>
+
+    <main id="map" aria-label="Campus map"></main>
+    <nav id="floors" class="floors" aria-label="Map floor" hidden></nav>
+
+    <section class="sheet" aria-labelledby="sheet-title">
+      <div class="sheet-head">
+        <h2 id="sheet-title">Nearest dispensers</h2>
+        <label class="inline">I'm on floor <select id="user-floor"></select></label>
+        <button id="refresh" type="button" aria-label="Reload dispenser data">↻</button>
+      </div>
+      <p id="accuracy" class="hint" hidden></p>
+      <ol id="results" class="results"></ol>
+    </section>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
