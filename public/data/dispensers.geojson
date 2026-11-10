@@ -1,4 +1,24 @@
 {
   "type": "FeatureCollection",
-  "features": []
+  "features": [
+    {
+      "type": "Feature",
+      "id": "b3723049-bfc7-4812-ad9f-ae07f21c64c8",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.5584027,
+          53.2233747
+        ]
+      },
+      "properties": {
+        "floor": "02",
+        "building": "2212",
+        "room": "0202B",
+        "note": "",
+        "fill": 100,
+        "checkedAt": "2026-11-10T13:07:39.875Z"
+      }
+    }
+  ]
 }
