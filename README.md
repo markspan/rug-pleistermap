@@ -3,6 +3,18 @@
 An Android app that shows bandaid dispensers on the University of Groningen floor plans
 from [RUG Maps](https://maps.rug.nl) and lists the nearest non-empty ones.
 
+## Using the Finder
+
+- **Search point.** The list ranks from your GPS position (blue dot, *Nearest to you*). Tap an
+  empty spot on the map to search from there instead: a blue pin appears (*Nearest to the pin*)
+  and stays put while you walk. The locate button removes the pin and returns to GPS.
+- **Your floor.** *I'm on floor* sets the floor the ranking starts from, also for a pin.
+- **Results.** The 3 nearest non-empty dispensers. Tap one to switch the map to its floor and
+  zoom in. Dot colour = fill: green above 50%, yellow 26 to 50%, orange 1 to 25%, grey not checked.
+- **Buttons, top left:** zoom, locate, layers (street map or aerial photo). They sit in one
+  column and grow with the phone's text size.
+- **Floor panel, right:** the floor the map shows. **↻** reloads the data.
+
 The project is split over three repositories:
 
 | Repository | Visibility | Holds |
@@ -19,7 +31,7 @@ is scoped to the data repository only, so it can never change app code.
 ```
 web/shared/   map core shared with the Editor: floor plans, floors, dispenser layer,
               dataset read/write, locate button, base maps (map or aerial photo)
-web/finder/   Finder UI and nearest-dispenser ranking
+web/finder/   Finder UI, nearest-dispenser ranking (nearest.js), search point (searchPoint.js)
 apps/finder/  Capacitor Android shell (android/ is generated in CI)
               android-patch.json: permissions and backup setting for the APK
 scripts/      patch-android.mjs: applies android-patch.json and stamps the version
@@ -33,14 +45,19 @@ does: `app_views.rooms/{z}/{x}/{y}.pbf?filter=floor='01'`. Floor codes are strin
 (`-1`, `-S`, `00`, `0T`, `01`, `2T`, ...). On Android, tiles are fetched via `CapacitorHttp`.
 
 **Base maps.** OpenStreetMap, or the Dutch national aerial photo `Actueel_orthoHR` from PDOK
-(Beeldmateriaal Nederland, CC BY 4.0), switched with the layers button.
+(Beeldmateriaal Nederland, CC BY 4.0), switched with the layers button. Floor plans fade to 55%
+over the photo. Map credits stay above the bottom panel, as both licenses require.
+
+**Map buttons.** `createMapCore()` returns `addButton(control)`, which puts an OpenLayers control
+in the shared top-left column (`.map-buttons`). Use it instead of `map.addControl()` for buttons
+that belong there.
 
 **Dataset.** Read anonymously from `raw.githubusercontent.com`, with the bundled copy as offline
 fallback. GitHub's CDN can serve a copy up to a few minutes old. Feature properties: `floor`,
 `building`, `room`, `note`, `fill` (0 to 100, or null if never checked) and `checkedAt`.
 
-**Nearest dispenser.** Straight-line GPS distance plus 20 m per floor between the user's floor
-(picked in the app) and the dispenser's floor. The 20 m is a convention for the cost of a
+**Nearest dispenser.** Straight-line distance from the search point (GPS or a tapped pin) plus
+20 m per floor between the user's floor (picked in the app) and the dispenser's floor. The 20 m is a convention for the cost of a
 staircase, set in `web/shared/config.js`. Empty dispensers are skipped.
 
 ## Releasing
@@ -62,7 +79,11 @@ npm test
 npm run build          # dist/finder
 ```
 
-A change in `web/shared` reaches the Editor when its repository updates the `core` submodule.
+A change in `web/shared` reaches the Editor when its repository updates the `core` submodule:
+`git submodule update --remote core`, commit, push.
+
+The full setup and operating manual (repositories, signing keys, releases, tokens,
+troubleshooting) is kept as a Claude doc: "RUG Bandaid apps: build, host and secrets manual".
 
 ## Caveats
 
